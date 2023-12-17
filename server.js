@@ -1,5 +1,3 @@
-// import "./scripts/Websocket.js";
-
-// import "./scripts/StreamWebSocket.js";
-
-import "./scripts/SocketSingleRoom.js";
+// import "./practice_scripts/Websocket.js";
+// import "./practice_scripts/StreamWebSocket.js";
+// import "./practice_scripts/SocketSingleRoom.js";
