@@ -1,10 +1,9 @@
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
+dotenv.config({ path: ".env.local" });
 
-dotenv.config();
-
-async function sendMail(mail) {
+async function sendMail(mail,OTP) {
   // generating access token cause it has expiry
   const OAuth2Client = new google.auth.OAuth2(
     process.env.CLIENT_ID,
@@ -16,7 +15,7 @@ async function sendMail(mail) {
 
   const ACCESS_TOKEN = await OAuth2Client.getAccessToken();
 
-  console.log("One time Access Token = ",ACCESS_TOKEN);
+  console.log("\n*******One time email api Access Token = ",ACCESS_TOKEN);
 
   const Transporter = nodemailer.createTransport({
     service: "gmail",
@@ -31,25 +30,28 @@ async function sendMail(mail) {
     },
   });
 
-  const OTP = Math.floor(Math.random(1) * 900000 + 100000);
+  // const OTP = Math.floor(Math.random(1) * 900000 + 100000);
 
   const mailResult = await Transporter.sendMail({
-    from: `E-CART E-COMMERCE 👊🏻📈 <${process.env.MAIL_USER}>`,
+    from: `🗨️Chat from Chatinger <${process.env.MAIL_USER}>`,
     to: mail,
-    subject: `Email Verification by E-Cart`,
+    subject: `Email Verification by Chatinger🗨️`,
     text: `Email Verification OTP is ${OTP}`,
-    html: `<div style='background-color:transperent;padding:10px;margin:10px;color:black;'>
-      <h1>E-Cart E-Commerce App</h1>
+    html: `<body style='background-color:transperent;padding:5px;margin:5px;color:black;'>
+      <h3>Chatinger Private Chat App</h3>
       <p>Here is Your One Time OTP : <h1>${OTP}</h1></p>
-      <p>Thank you for signing in with E-Cart</p>
+      <p>Thank you for signing and showing trust in with CHATINGER&nbsp;🗨️</p>
       <p>Get Help : ${process.env.MAIL_USER}</p>
       <p>Developed by : <i><b>Kuldip Sarvaiya</b></i></p>
-    </div>`,
+    </body>`,
   });
 
-  if (mailResult) return OTP;
+  // if (mailResult) return OTP;
 
-  return new Error(mailResult);
+  // return new Error(mailResult);
+  return 
 }
 
 export default sendMail;
+
+// console.log(await sendMail('kuldipsarvaiya94@gmail.com'));

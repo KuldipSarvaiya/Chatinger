@@ -1,3 +1,5 @@
 video.mp4
 node_modules
 .env.local
+.env
+credentials-gmail.json

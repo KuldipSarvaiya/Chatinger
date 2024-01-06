@@ -9,6 +9,13 @@ const userSchema = new mongoose.Schema(
       required: [true, "\n*****username has not provided\n"],
       lowercase: true,
       immutable: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: [true, "\n*****password has not provided\n"],
+      immutable: true,
+      minLength: [8, "\n******password must 8 characters long\n"],
     },
     display_name: {
       type: String,
@@ -28,8 +35,16 @@ const userSchema = new mongoose.Schema(
       immutable: false,
       default: "default_JWT_Token",
     },
-    received_friend_requests: { type: [Schema.Types.ObjectId], ref: "User" }, 
-    chatrooms: { type: [Schema.Types.ObjectId], ref: "ChatRoom" },
+    received_friend_requests: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      required: false,
+    },
+    chatrooms: {
+      type: [Schema.Types.ObjectId],
+      ref: "ChatRoom",
+      required: false,
+    },
   },
   {
     timestamps: { createdAt: "joinedOn" },
