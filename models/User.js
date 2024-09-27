@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
-      minLength: 10,
+      minLength: 5,
       maxLength: 50,
       required: [true, "\n*****username has not provided\n"],
       lowercase: true,
@@ -23,33 +23,16 @@ const userSchema = new mongoose.Schema(
       immutable: true,
       maxLength: 18,
     },
-    email: {
-      type: String,
-      required: [true, "\n*****email has not provided"],
-      immutable: true,
-      unique: true,
-    },
-    jwt: {
-      type: String,
-      required: false,
-      immutable: false,
-      default: "default_JWT_Token",
-    },
     received_friend_requests: {
       type: [Schema.Types.ObjectId],
       ref: "User",
       required: false,
-    },
-    chatrooms: {
-      type: [Schema.Types.ObjectId],
-      ref: "ChatRoom",
-      required: false,
-    },
+    }
   },
   {
     timestamps: { createdAt: "joinedOn" },
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;
