@@ -3,10 +3,10 @@ import { Router } from "express";
 const Group = new Router();
 
 // create new group
-Group.post("/create", async (req, res) => {});
+Group.post("/create/:admin_id/:group_name", async (req, res) => {});
 
 // add new member to group
-Group.put("/add_member", async (req, res) => {});
+Group.put("/add_member/:member_id", async (req, res) => {});
 
 // remove member from group
 Group.patch("/remove_member/:member_id", async (req, res) => {
@@ -15,6 +15,6 @@ Group.patch("/remove_member/:member_id", async (req, res) => {
 });
 
 // delete whole group
-Group.delete("/delete", async (req, res) => {});
+Group.delete("/delete/:group_id", async (req, res) => {});
 
 export default Group;

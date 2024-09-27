@@ -12,10 +12,6 @@ const messageSchema = new mongoose.Schema(
       ref: "User",
       immutable: true,
     },
-    //   sent_to:{
-    //     type: Schema.Types.User,
-    //     immutable:true,
-    //   },
     chatroom: {
       type: Schema.Types.ObjectId,
       ref: "ChatRoom",
@@ -27,5 +23,6 @@ const messageSchema = new mongoose.Schema(
   }
 );
 
-const Message = mongoose.model("Message", messageSchema);
+const Message =
+  mongoose.models.Message || mongoose.model("Message", messageSchema);
 export default Message;
