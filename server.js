@@ -7,15 +7,14 @@ import authMiddleware from "./Functions/authenticate.middleware.js";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
 import connectDB from "./Functions/connectDB.js";
+import { retriveMessages, saveMessage } from "./Functions/Messages.js";
 dotenv.config({ path: ".env.local" });
 
 const mdbConnection = await connectDB();
 
 const App = new express();
 
-App.use(
-  cors({ origin: "*" })
-);
+App.use(cors({ origin: "*" }));
 
 App.use(express.json());
 App.use(authMiddleware);
@@ -44,23 +43,42 @@ io.on("connection", (socket) => {
     socket.id
   );
 
-  socket.on("join_room", (room) => {
-    console.log(room.room, " room joined by ", socket.id);
-    socket.join(room.room);
+  socket.on("join_room", (data) => {
+    console.log(data.room, " room joined by ", socket.id);
+    socket.join(data.room);
   });
 
   socket.on("messageToServer", (data) => {
     console.log(
-      socket.id,
+      data.room,
+      data.sent_by,
       " : Message received from client side : ",
       data.message
     );
     socket.to(data.room).emit("messageToClient", data.message);
+    saveMessage({
+      text: data.message.trim("\n"),
+      sent_by: data.sent_by,
+      chatroom: data.room,
+    });
   });
 
-  socket.on("leave_room", (room) => {
-    console.log(room.room, " room closed by ", socket.id);
-    socket.leave(room.room);
+  socket.on("retriveMessages", (data) => {
+    console.log("\n\n************************ retriveMessages = ", data);
+    retriveMessages(data.payload)
+      .then((res) => {
+        io.in(data.room).emit("listMessages", res, () => {
+          console.log("\n########## listMessages event emitted = ", res);
+        });
+      })
+      .catch((error) => {
+        console.log(data, "************* error while fetching messages", error);
+      });
+  });
+
+  socket.on("leave_room", (data) => {
+    console.log(data.room, " room closed by ", socket.id);
+    socket.leave(data.room);
   });
 });
 

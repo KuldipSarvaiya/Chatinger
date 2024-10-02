@@ -35,6 +35,7 @@ Auth.post("/signin", async (req, res) => {
 
 Auth.post("/signup", async (req, res) => {
   const { username } = req.body;
+console.log(req.body);
 
   await connectDB();
 

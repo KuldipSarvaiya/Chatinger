@@ -10,6 +10,7 @@ const Friends = new Router();
 Friends.route("/")
   .post(async (req, res) => {})
   .delete(async (req, res) => {
+    // ? To Remove Friend
     const { chatroom_id } = req.query;
     if (!chatroom_id) return res.json({ error: true });
 
@@ -85,6 +86,7 @@ Friends.route("/request")
 
     return res.json({ error: false });
   })
+
   // ! API to revoke my sent friend request
   .delete(async (req, res) => {
     const { friend_id } = req.query;
@@ -128,6 +130,24 @@ Friends.get("/search_by_username/:username", async (req, res) => {
   }).select("_id username display_name");
 
   return res.json({ error: false, users: users });
+});
+
+Friends.delete("/clear_chats/:chatroom_id", async (req, res) => {
+  const { chatroom_id } = req.params;
+
+  await connectDB();
+
+  try {
+    const deleted = await Message.deleteMany({ chatroom: chatroom_id });
+
+    return res.json({ error: false });
+  } catch (error) {
+    console.log(
+      "\n **************** error happend while ckearing all messages ",
+      error
+    );
+    return res.status(500).json({ error: true, message: error });
+  }
 });
 
 export default Friends;
