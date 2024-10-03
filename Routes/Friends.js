@@ -17,8 +17,13 @@ Friends.route("/")
     try {
       await connectDB();
 
-      const deleteChatroom = await ChatRoom.deleteOne({ _id: chatroom_id });
-      const deleteMessage = await Message.deleteMany({ chatroom: chatroom_id });
+      const deleteChatroom = ChatRoom.deleteOne({ _id: chatroom_id });
+      const deleteMessage = Message.deleteMany({ chatroom: chatroom_id });
+
+      const [chatroomDeleted, messageDeleted] = await Promise.all([
+        deleteChatroom,
+        deleteMessage,
+      ]);
 
       console.log(deleteChatroom);
       console.log(deleteMessage);

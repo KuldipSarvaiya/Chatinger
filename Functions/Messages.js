@@ -21,7 +21,7 @@ export async function retriveMessages({ chatroom_id, skip, take }) {
       .populate({
         path: "sent_by",
         model: "User",
-        select: "username",
+        select: "display_name",
       })
       .sort({ deliveredAt: 1 })
       .skip(skip || 0)

@@ -53,9 +53,15 @@ io.on("connection", (socket) => {
       data.room,
       data.sent_by,
       " : Message received from client side : ",
-      data.message
+      data.message,
+      data.display_name
     );
-    socket.to(data.room).emit("messageToClient", data.message);
+    socket
+      .to(data.room)
+      .emit("messageToClient", {
+        message: data.message,
+        display_name: data.display_name,
+      });
     saveMessage({
       text: data.message.trim("\n"),
       sent_by: data.sent_by,
