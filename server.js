@@ -74,7 +74,7 @@ io.on("connection", (socket) => {
     retriveMessages(data.payload)
       .then((res) => {
         io.in(data.room).emit("listMessages", res, () => {
-          console.log("\n########## listMessages event emitted = ", res);
+          console.log("\n########## listMessages event emitted");
         });
       })
       .catch((error) => {

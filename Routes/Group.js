@@ -173,4 +173,20 @@ Group.delete("/:group_id", async (req, res) => {
   }
 });
 
+Group.get("/leave_group/:chatroom_id", async (req, res) => {
+  const { chatroom_id } = req.params;
+  console.log(chatroom_id);
+  try {
+    const result = await ChatRoom.updateOne(
+      { _id: chatroom_id, members: { $in: [req.auth._id] } },
+      { $pull: { members: req.auth._id } }
+    );
+    console.log(result);
+    return res.status(200).json({ error: false });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: true, message: error });
+  }
+});
+
 export default Group;
