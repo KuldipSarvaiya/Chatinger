@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import { Server } from "socket.io";
 import connectDB from "./Functions/connectDB.js";
 import { retriveMessages, saveMessage } from "./Functions/Messages.js";
+import { ExpressPeerServer } from "peer";
 dotenv.config({ path: ".env.local" });
 
 const mdbConnection = await connectDB();
@@ -24,13 +25,20 @@ App.use("/friend", Friends);
 
 const expServer = App.listen(
   process.env.SERVER_PORT,
-  process.env.SERVER_IP,
+  process.env.SERVER_HOST,
   () => {
     console.log(
-      `\n*****Chatinger Server is started running on http://${process.env.SERVER_IP}:${process.env.SERVER_PORT}`
+      `\n*****Chatinger Server is started running on http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`
     );
   }
 );
+
+const videoServer = ExpressPeerServer(expServer, {
+  path: "/",
+  allow_discovery: true,
+  debug: true
+});
+App.use("/video-call", videoServer);
 
 // code to communicate with sockets
 const io = new Server(expServer, {
