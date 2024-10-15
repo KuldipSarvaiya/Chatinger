@@ -56,6 +56,18 @@ io.on("connection", (socket) => {
     socket.join(data.room);
   });
 
+  socket.on("join_video_call", (data) => {
+    console.log(data.room, " video joined by ", socket.id);
+    socket.join(data.room);
+    socket.to(data.room).emit("answer_video_call", {roomId: data.room})
+  });
+
+  socket.on("end_private_video_call", (data) => {
+    console.log(data.room, " end video joined by ", socket.id);
+    socket.leave(data.room);
+    socket.to(data.room).emit("end_private_video_call", {roomId: data.room})
+  });
+
   socket.on("messageToServer", (data) => {
     console.log(
       data.room,
