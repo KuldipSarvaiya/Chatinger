@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
-dotenv.config({ path: ".env.local" });
 
 async function sendMail(mail,OTP) {
   // generating access token cause it has expiry
