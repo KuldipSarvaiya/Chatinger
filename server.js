@@ -4,12 +4,11 @@ import Auth from "./Routes/Auth.js";
 import Group from "./Routes/Group.js";
 import Friends from "./Routes/Friends.js";
 import authMiddleware from "./Functions/authenticate.middleware.js";
-import dotenv from "dotenv";
 import { Server } from "socket.io";
 import connectDB from "./Functions/connectDB.js";
 import { retriveMessages, saveMessage } from "./Functions/Messages.js";
 import { ExpressPeerServer } from "peer";
-dotenv.config({ path: ".env.local" });
+import ActiveUsersManager from "./Functions/random_video_call.js";
 
 const mdbConnection = await connectDB();
 
@@ -40,6 +39,8 @@ const videoServer = ExpressPeerServer(expServer, {
 });
 App.use("/video-call", videoServer);
 
+const usersManager = new ActiveUsersManager();
+
 // code to communicate with sockets
 const io = new Server(expServer, {
   cors: { origin: "*" },
@@ -58,35 +59,30 @@ io.on("connection", (socket) => {
 
   socket.on("join_video_call", (data) => {
     console.log(data.room, " video joined by ", socket.id);
-    socket.join(data.room);
-    socket.to(data.room).emit("answer_video_call", {roomId: data.room})
+    socket
+      .to(data.room)
+      .emit("answer_video_call", { roomId: data.room, ...data });
   });
 
   socket.on("end_private_video_call", (data) => {
     console.log(data.room, " end video joined by ", socket.id);
     socket.leave(data.room);
-    socket.to(data.room).emit("end_private_video_call", {roomId: data.room})
+    socket.to(data.room).emit("end_private_video_call", { roomId: data.room });
   });
 
   socket.on("messageToServer", (data) => {
-    console.log(
-      data.room,
-      data.sent_by,
-      " : Message received from client side : ",
-      data.message,
-      data.display_name
-    );
-    socket
-      .to(data.room)
-      .emit("messageToClient", {
-        message: data.message,
-        display_name: data.display_name,
-      });
-    saveMessage({
-      text: data.message.trim("\n"),
-      sent_by: data.sent_by,
-      chatroom: data.room,
+    socket.to(data.room).emit("messageToClient", {
+      room: data.room,
+      message: data.message,
+      display_name: data.display_name,
     });
+
+    if (data?.do_not_send_message !== "yes")
+      saveMessage({
+        text: data.message.trim("\n"),
+        sent_by: data.sent_by,
+        chatroom: data.room,
+      });
   });
 
   socket.on("retriveMessages", (data) => {
@@ -105,6 +101,65 @@ io.on("connection", (socket) => {
   socket.on("leave_room", (data) => {
     console.log(data.room, " room closed by ", socket.id);
     socket.leave(data.room);
+  });
+
+  // --//--/--/--/--/--/--/--/ random video call /--/--/--/--/--/--/--//--
+  socket.on("join_random_video_call", (peerId) => {
+    usersManager.addUser(socket.id, peerId);
+
+    io.emit("userCounts", {
+      active: usersManager.getActiveUsersCount(),
+      waiting: usersManager.getWaitingUsersCount(),
+    });
+  });
+
+  socket.on("findMatch", () => {
+    console.log("findMatch");
+    const matchedSocketId = usersManager.findMatch(socket.id);
+    console.log("matchedSocketId = ", matchedSocketId);
+
+    if (matchedSocketId) {
+      const room = usersManager.createRoom(socket.id, matchedSocketId);
+      console.log("room = ", room);
+
+      if (room) {
+        // Notify both users
+        io.to(socket.id).emit("matchFound", {
+          roomId: room.roomId,
+          remotePeerId: room.user2.peerId,
+        });
+
+        io.to(matchedSocketId).emit("matchFound", {
+          roomId: room.roomId,
+          remotePeerId: room.user1.peerId,
+        });
+      }
+    }
+  });
+
+  socket.on("callEnded", () => {
+    usersManager.makeUserAvailable(socket.id);
+
+    io.emit("userCounts", {
+      active: usersManager.getActiveUsersCount(),
+      waiting: usersManager.getWaitingUsersCount(),
+    });
+  });
+
+  socket.on("disconnect_rvc", () => {
+    console.log("disconnect_rvc");
+
+    const roomId = usersManager.removeUser(socket.id);
+
+    if (roomId) {
+      // Notify other users in the room
+      io.to(roomId).emit("userDisconnected");
+    }
+
+    io.emit("userCounts", {
+      active: usersManager.getActiveUsersCount(),
+      waiting: usersManager.getWaitingUsersCount(),
+    });
   });
 });
 

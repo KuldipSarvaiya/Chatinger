@@ -30,6 +30,8 @@ Group.post("/", async (req, res) => {
   }
 });
 
+  // ******************************************************************************************************************************************
+
 // add & remove member from group
 Group.route("/members")
   .get(async (req, res) => {
@@ -114,6 +116,9 @@ Group.route("/members")
       return res.status(500).json({ error: true, message: error });
     }
   })
+
+  // ******************************************************************************************************************************************
+
   .put(async (req, res) => {
     const { member_id, operation_type, chatroom_id } = req.body;
     console.log(member_id);
@@ -138,6 +143,7 @@ Group.route("/members")
     }
   });
 
+  // ******************************************************************************************************************************************
 // * delete whole group - not in use, insted FE uses remove Friend API
 Group.delete("/:group_id", async (req, res) => {
   const { group_id } = req.params;
@@ -172,6 +178,8 @@ Group.delete("/:group_id", async (req, res) => {
     return res.status(500).json({ error: true, message: error.message });
   }
 });
+
+  // ******************************************************************************************************************************************
 
 Group.get("/leave_group/:chatroom_id", async (req, res) => {
   const { chatroom_id } = req.params;
