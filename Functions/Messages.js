@@ -17,7 +17,7 @@ export async function retriveMessages({ chatroom_id, skip, take }) {
   await connectDB();
 
   try {
-    const msg = await Message.find({ chatroom: chatroom_id })
+    const msg = Message.find({ chatroom: chatroom_id })
       .populate({
         path: "sent_by",
         model: "User",
@@ -25,9 +25,14 @@ export async function retriveMessages({ chatroom_id, skip, take }) {
       })
       .sort({ deliveredAt: 1 })
       .skip(skip || 0)
-      .limit(take || 100).select("_id text deliveredAt sent_by");
+      .limit(take || 10)
+      .select("_id text deliveredAt sent_by");
+    const count = Message.countDocuments({ chatroom: chatroom_id });
 
-    return msg;
+    const [messages, totalMessages] = await Promise.all([msg, count]);
+    console.log(totalMessages);
+
+    return { messages, totalMessages, pagination: { skip, take } };
   } catch (error) {
     console.log(
       "\n\n ********************** Failed to retrive Message - ",
