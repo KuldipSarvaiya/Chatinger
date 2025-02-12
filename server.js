@@ -35,7 +35,7 @@ const expServer = App.listen(
 const videoServer = ExpressPeerServer(expServer, {
   path: "/",
   allow_discovery: true,
-  debug: true
+  debug: true,
 });
 App.use("/video-call", videoServer);
 
@@ -55,6 +55,12 @@ io.on("connection", (socket) => {
   socket.on("join_room", (data) => {
     console.log(data.room, " room joined by ", socket.id);
     socket.join(data.room);
+    socket.to(data.room).emit("ping", { type: "online", room: data.room });
+  });
+
+  socket.on("pong", (data) => {
+    console.log(data.room, " pong by ", socket.id);
+    socket.to(data.room).emit("ping", data);
   });
 
   socket.on("join_video_call", (data) => {
@@ -89,9 +95,7 @@ io.on("connection", (socket) => {
     console.log("\n\n************************ retriveMessages = ", data);
     retriveMessages(data.payload)
       .then((res) => {
-        io.in(data.room).emit("listMessages", res, () => {
-          console.log("\n########## listMessages event emitted");
-        });
+        socket.emit("listMessages", res);
       })
       .catch((error) => {
         console.log(data, "************* error while fetching messages", error);
@@ -101,6 +105,7 @@ io.on("connection", (socket) => {
   socket.on("leave_room", (data) => {
     console.log(data.room, " room closed by ", socket.id);
     socket.leave(data.room);
+    socket.to(data.room).emit("ping", { type: "offline", room: data.room });
   });
 
   // --//--/--/--/--/--/--/--/ random video call /--/--/--/--/--/--/--//--
